@@ -8,7 +8,7 @@ program main
   write(*,*)'Hello world!!'
   call input
   call initialize
-
+  call init_laser
 
   call fin_input
   call fin_parallel

@@ -39,6 +39,10 @@ module global_variables
   real(8) :: dt, T_propagation
   integer :: nt 
 
+! laser 
+  real(8),allocatable :: Act(:,:),Act_dt2(:,:)
+  real(8),allocatable :: Ezt(:),Ezt_dt2(:)
+
 
 ! band parameter
   integer,parameter :: nband_type_dirac_cone = 0
