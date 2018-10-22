@@ -17,6 +17,7 @@ $(PROG):math.o \
         parallel.o \
         communication.o \
         constants.o \
+        io_mod.o \
         global_variables.o $(OBJ)
 	$(FC) -o $(PROG) $(OBJ_dir) $(LN)
 
