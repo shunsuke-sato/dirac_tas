@@ -10,6 +10,8 @@ program main
   call initialize
   call init_laser
 
+  call real_time_propagation
+
   call fin_input
   call fin_parallel
 
