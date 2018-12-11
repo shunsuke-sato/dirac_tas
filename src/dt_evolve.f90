@@ -57,7 +57,9 @@ subroutine dt_evolve_RK4(it)
     zrho_t(:,:) = zrho_rk(:,:,0) + dt*zrho_rk(:,:,3)
     call apply_Lrho(zrho_t, zrho_rk(:,:,4), kx_t,ky_t,Ezt)
 
-
+    zrho_dm(:,:,ik) = zrho_dm(:,:,ik) + dt/6d0*( &
+      zrho_rk(:,:,1) + 2d0*zrho_rk(:,:,2) + 2d0*zrho_rk(:,:,3) + zrho_rk(:,:,4))
+      
 
 
   end do
@@ -66,4 +68,36 @@ subroutine dt_evolve_RK4(it)
 
 end subroutine dt_evolve_RK4
 !===================================================================
+subroutine apply_Lrho(zrho_in, zLrho_out, kx_t, ky_t,Ezt)
+  use global_variables
+  implicit none
+  complex(8),intent(in) :: zrho_in(4,4)
+  complex(8),intent(out) :: zLrho_out(4,4)
+  complex(8) :: zHmat_t(4,4)
+
+  zhmat_t(1,1) = 0d0
+  zhmat_t(2,1) = v_Fermi*(tau_chiral*kx_t+zI*kt_t)
+  zhmat_t(3,1) = dip_core*Ezt
+  zhmat_t(4,1) = 0d0
+
+  zhmat_t(1,2) = v_Fermi*(tau_chiral*kx_t-zI*kt_t)
+  zhmat_t(2,2) = 0d0
+  zhmat_t(3,2) = 0d0
+  zhmat_t(4,2) = dip_core*Ezt
+
+  zhmat_t(1,3) = dip_core*Ezt
+  zhmat_t(2,3) = 0d0
+  zhmat_t(3,3) = eps_core
+  zhmat_t(4,3) = 0d0
+
+  zhmat_t(1,4) = 0d0
+  zhmat_t(2,4) = dip_core*Ezt
+  zhmat_t(3,4) = 0d0
+  zhmat_t(4,4) = eps_core
+
+  zLrho_out = -zI*( matmul(zhmat_t,zrho_in) - matmul(zrho_in,zhmat_t) )
+
+end subroutine apply_Lrho
+
+
 !===================================================================

@@ -9,6 +9,6 @@ T_relax_fs = 100d0
 mu_F_ev = 0d0
 kbT_K = 80d0
 
-T_propagation_fs = 2d3
+T_propagation_fs = 20d0
 dt = 0.64d0
 

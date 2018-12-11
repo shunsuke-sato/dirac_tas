@@ -8,11 +8,11 @@ subroutine init_laser
   integer :: it
   real(8) :: tt, xx
 
-  f0_1 = 2d7*ev/angstrom*1d-10 !V/m
+  f0_1 = 0d0*ev/angstrom*1d-10 !V/m
   f0_2 = 1d4*ev/angstrom*1d-10 !V/m
   omega_1 = 200d-3*ev
   omega_2 = 300d0*ev
-  tpulse_1 = 2d3*fs
+  tpulse_1 = 1d0*fs !2d3*fs
   tpulse_2 = 1d0*fs
   
 
