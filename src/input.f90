@@ -1,7 +1,8 @@
 subroutine input
   use global_variables
   implicit none
-  real(8) :: T_relax_fs,mu_F_ev, kbT_K
+  real(8) :: T1_relax_fs,T2_relax_fs
+  real(8) :: mu_F_ev, kbT_K
   real(8) :: T_propagation_fs
 
   if(if_root_global)then
@@ -14,9 +15,14 @@ subroutine input
   call read_basic_input('nkx',nkx,val_default = -1)
   call read_basic_input('nky',nky,val_default = -1)
 
-  call read_basic_input('T_relax_fs',T_relax_fs,val_default = -1d0)
+!  call read_basic_input('T_relax_fs',T_relax_fs,val_default = -1d0)
+!  T_relax = T_relax_fs*fs
 
-  T_relax = T_relax_fs*fs
+  call read_basic_input('T1_relax_fs',T1_relax_fs,val_default = -1d0)
+  T1_relax = T1_relax_fs*fs
+
+  call read_basic_input('T2_relax_fs',T2_relax_fs,val_default = -1d0)
+  T2_relax = T2_relax_fs*fs
 
   v_Fermi = clight*1.12d6/299792458d0
   eps_gap = 0d0*ev

@@ -25,7 +25,7 @@ module global_variables
   real(8) :: dip_core
 
 ! relaxation parameters
-  real(8) :: T_relax
+  real(8) :: T1_relax,T2_relax
 
 ! Fermi-Dirac distribution
   real(8) :: mu_F

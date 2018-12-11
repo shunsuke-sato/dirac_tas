@@ -75,6 +75,8 @@ subroutine apply_Lrho(zrho_in, zLrho_out, kx_t, ky_t,Ezt_t)
   complex(8),intent(out) :: zLrho_out(4,4)
   real(8),intent(in) :: kx_t, ky_t, Ezt_t
   complex(8) :: zHmat_t(4,4)
+  complex(8) :: zeigv(4,4), zrho_col(4,4)
+  real(8) :: occ_v, occ_c, occ_core, eps_v, eps_c, phi
 
   zhmat_t(1,1) = 0d0
   zhmat_t(2,1) = v_Fermi*(tau_chiral*kx_t+zI*ky_t)
@@ -97,6 +99,48 @@ subroutine apply_Lrho(zrho_in, zLrho_out, kx_t, ky_t,Ezt_t)
   zhmat_t(4,4) = eps_core
 
   zLrho_out = -zI*( matmul(zhmat_t,zrho_in) - matmul(zrho_in,zhmat_t) )
+
+! relaxation
+  eps_c = v_Fermi*sqrt(kx_t**2 + ky_t**2)
+  eps_v = - eps_c
+  occ_v = Fermi_Dirac_distribution(eps_v, mu_F, kbT)
+  occ_c = Fermi_Dirac_distribution(eps_c, mu_F, kbT)
+  occ_core = Fermi_Dirac_distribution(eps_core, mu_F, kbT)
+
+  if(kx_t*tau_chiral > 0d0)then
+    phi = atan(ky_t/kx_t*tau_chiral)
+  else if(kx_t*tau_chiral < 0d0)then
+    phi = atan(ky_t/kx_t*tau_chiral) + pi
+  else
+    if(ky_t > 0d0)then
+      phi = 0.5d0*pi
+    else
+      phi = -0.5d0*pi
+    end if
+  end if
+
+  zeigv = 0d0
+  zeigv(1,1:2) = 1d0/sqrt(2d0)
+  zeigv(2,1) = -exp(zI*phi)/sqrt(2d0)
+  zeigv(2,2) =  exp(zI*phi)/sqrt(2d0)
+  zeigv(3,3) = 1d0
+  zeigv(4,4) = 1d0
+
+  zrho_col = matmul(transpose(conjg(zeigv)),matmul(zrho_in,zeigv))
+  zrho_col(1,1) = -(zrho_col(1,1)-occ_v)/T1_relax
+  zrho_col(2:4,1) = -zrho_col(2:4,1)/T2_relax
+  zrho_col(1,2) = -zrho_col(1,2)/T2_relax
+  zrho_col(2,2) = -(zrho_col(2,2)-occ_c)/T1_relax
+  zrho_col(3:4,2) = -zrho_col(3:4,2)/T2_relax
+  zrho_col(1:2,3) = -zrho_col(1:2,3)/T2_relax
+  zrho_col(3,3) = -(zrho_col(3,3)-occ_core)/T1_relax
+  zrho_col(4,3) = -zrho_col(4,3)/T2_relax
+  zrho_col(1:3,4) = -zrho_col(1:3,4)/T2_relax
+  zrho_col(4,4) = -(zrho_col(4,4)-occ_core)/T1_relax
+
+  zrho_col = matmul( matmul(zeigv, zrho_col), transpose(conjg(zeigv)))
+
+  zLrho_out = zLrho_out + zrho_col
 
 end subroutine apply_Lrho
 
