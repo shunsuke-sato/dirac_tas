@@ -8,6 +8,10 @@ subroutine init_laser
   integer :: it
   real(8) :: tt, xx
 
+  if(if_root_global)then
+    write(*,"(A)")"Start: init_laser"
+  end if
+
   f0_1 = 0d0*ev/angstrom*1d-10 !V/m
   f0_2 = 1d4*ev/angstrom*1d-10 !V/m
   omega_1 = 200d-3*ev
@@ -53,5 +57,8 @@ subroutine init_laser
 
   end do
 
+  if(if_root_global)then
+    write(*,"(A)")"Finish: init_laser"
+  end if
 
 end subroutine init_laser

@@ -2,6 +2,10 @@ subroutine initialize
   use global_variables
   implicit none
   integer :: ik, ikx, iky
+
+  if(if_root_global)then
+    write(*,"(A)")"Start: initialize"
+  end if
     
   nk = nkx*nky
   dkx = 2d0*kx_max/nkx
@@ -53,6 +57,10 @@ subroutine initialize
 
 
   call initialize_density_matrix
+
+  if(if_root_global)then
+    write(*,"(A)")"Finish: initialize"
+  end if
   
 end subroutine initialize
 !-------------------------------------------------------------------------------
@@ -106,5 +114,8 @@ subroutine initialize_density_matrix
     zrho_dm(4,4,ik) =  occ_core
 
   end do
+
+
+
     
 end subroutine initialize_density_matrix
