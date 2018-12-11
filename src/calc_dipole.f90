@@ -3,7 +3,7 @@ subroutine calc_dipole(dip_k)
   implicit none
   real(8), intent(out) :: dip_k
   real(8) :: dip_mat(4,4)
-  complex(8) :: ztmp_mat
+  complex(8) :: ztmp_mat(4,4)
   integer :: ik
 
   dip_mat = 0d0
