@@ -11,10 +11,7 @@ subroutine real_time_propagation
   do it = 0, nt
     call impulsive_field(it)
     call dt_evolve(it)
-    write(*,*)it,real(sum(zrho_dm(1,1,:)+zrho_dm(2,2,:)))
     call calc_dipole(dipole_t(it+1))
-
-
   end do
 
 

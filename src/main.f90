@@ -5,7 +5,7 @@ program main
   call init_parallel
   call init_input
 
-  write(*,*)'Hello world!!'
+!  write(*,*)'Hello world!!'
   call input
   call initialize
   call init_laser
