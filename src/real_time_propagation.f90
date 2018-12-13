@@ -20,7 +20,7 @@ subroutine real_time_propagation
 
   call comm_allreduce(dipole_t)
   if(if_root_global)then
-    open(20,file='dipole_t')
+    open(20,file='dipole_t.out')
     do it_t = 0, nt
       write(20,"(999e26.16)")dt*it_t,Ezt(it_t),dipole_t(it_t)
     end do
