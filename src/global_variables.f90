@@ -42,6 +42,9 @@ module global_variables
 ! laser 
   real(8),allocatable :: Act(:,:),Act_dt2(:,:)
   real(8),allocatable :: Ezt(:),Ezt_dt2(:)
+  logical,parameter :: if_impulse = .true.
+  integer :: it_impulse
+  real(8) :: kmom_impulse
 
 
 ! band parameter

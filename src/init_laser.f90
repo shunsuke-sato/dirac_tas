@@ -19,6 +19,9 @@ subroutine init_laser
   tpulse_1 = 1d0*fs !2d3*fs
   tpulse_2 = 1d0*fs
   
+  it_impulse = 0
+  kmom_impulse = 1d-2
+  
 
   allocate(Act(2,-1:nt+1),Act_dt2(2,-1:nt+1))
   act = 0d0; act_dt2 = 0d0

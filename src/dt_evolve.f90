@@ -3,9 +3,13 @@ subroutine dt_evolve(it)
   implicit none
   integer,intent(in) :: it
   integer,parameter :: n_Runge_Kutta_4th = 0
-  integer,parameter :: imethod = n_Runge_Kutta_4th
+  integer,parameter :: n_mid_point_kick_only = 1
+  integer,parameter :: imethod = n_mid_point_kick_only
+!  integer,parameter :: imethod = n_Runge_Kutta_4th
 
   select case(imethod)
+  case(n_mid_point_kick_only)
+    call dt_evolve_mid_point_kick_only(it)
   case(n_Runge_Kutta_4th)
     call dt_evolve_RK4(it)
   case default
@@ -13,6 +17,103 @@ subroutine dt_evolve(it)
   end select
   
 end subroutine dt_evolve
+!===================================================================
+subroutine dt_evolve_mid_point_kick_only(it)
+  use global_variables
+  implicit none
+  integer,intent(in) :: it
+  integer :: ik
+  real(8) :: kx_t, ky_t, Ezt_t
+  complex(8) :: zrho_t(4,4)
+  complex(8) :: zeigv(4,4), zrho_col(4,4)
+  complex(8) :: zprop0(4,4), zprop(4,4)
+  real(8) :: occ_v, occ_c, occ_core, eps_v, eps_c
+
+  zeigv = 0d0
+  zprop0 = 0d0
+
+  do ik = nk_start, nk_end
+    zrho_t(:,:) = zrho_dm(:,:,ik)
+! t -> t+dt/2
+    kx_t = kx(ik) + Act(1,it)
+    ky_t = ky(ik) + Act(2,it)
+
+    call calc_zeigv
+    zprop0(1,1) = exp(-zI*dt*0.5d0*eps_v)
+    zprop0(2,2) = exp(-zI*dt*0.5d0*eps_c)
+    zprop0(3,3) = exp(-zI*dt*0.5d0*eps_core)
+    zprop0(4,4) = exp(-zI*dt*0.5d0*eps_core)
+    zprop = matmul(zeigv ,matmul(zprop0,conjg(transpose(zeigv))))
+    zrho_t(:,:) = matmul(matmul(zprop, zrho_t(:,:)), conjg(transpose(zprop)))
+
+! damping
+    kx_t = kx(ik) + Act_dt2(1,it)
+    ky_t = ky(ik) + Act_dt2(2,it)
+    call calc_zeigv
+    occ_v = Fermi_Dirac_distribution(eps_v, mu_F, kbT)
+    occ_c = Fermi_Dirac_distribution(eps_c, mu_F, kbT)
+    occ_core = Fermi_Dirac_distribution(eps_core, mu_F, kbT)
+
+    zrho_col = matmul(transpose(conjg(zeigv)),matmul(zrho_t,zeigv))
+    zrho_col(1,1) = -(zrho_col(1,1)-occ_v)/T1_relax
+    zrho_col(2:4,1) = -zrho_col(2:4,1)/T2_relax
+    zrho_col(1,2) = -zrho_col(1,2)/T2_relax
+    zrho_col(2,2) = -(zrho_col(2,2)-occ_c)/T1_relax
+    zrho_col(3:4,2) = -zrho_col(3:4,2)/T2_relax
+    zrho_col(1:2,3) = -zrho_col(1:2,3)/T2_relax
+    zrho_col(3,3) = -(zrho_col(3,3)-occ_core)/T1_relax
+    zrho_col(4,3) = -zrho_col(4,3)/T2_relax
+    zrho_col(1:3,4) = -zrho_col(1:3,4)/T2_relax
+    zrho_col(4,4) = -(zrho_col(4,4)-occ_core)/T1_relax
+
+    zrho_col = matmul( matmul(zeigv, zrho_col), transpose(conjg(zeigv)))
+    zrho_t = zrho_t + dt*zrho_col
+
+! t+dt/2 -> t+dt
+    kx_t = kx(ik) + Act(1,it+1)
+    ky_t = ky(ik) + Act(2,it+1)
+
+    call calc_zeigv
+    zprop0(1,1) = exp(-zI*dt*0.5d0*eps_v)
+    zprop0(2,2) = exp(-zI*dt*0.5d0*eps_c)
+    zprop0(3,3) = exp(-zI*dt*0.5d0*eps_core)
+    zprop0(4,4) = exp(-zI*dt*0.5d0*eps_core)
+    zprop = matmul(zeigv ,matmul(zprop0,conjg(transpose(zeigv))))
+    zrho_t(:,:) = matmul(matmul(zprop, zrho_t(:,:)), conjg(transpose(zprop)))
+
+    zrho_dm(:,:,ik) = zrho_t
+
+  end do
+
+contains
+  subroutine calc_zeigv
+    implicit none
+    real(8) :: phi
+
+    eps_c = v_Fermi*sqrt(kx_t**2 + ky_t**2)
+    eps_v = - eps_c
+
+    if(kx_t*tau_chiral > 0d0)then
+      phi = atan(ky_t/kx_t*tau_chiral)
+    else if(kx_t*tau_chiral < 0d0)then
+      phi = atan(ky_t/kx_t*tau_chiral) + pi
+    else
+      if(ky_t > 0d0)then
+        phi = 0.5d0*pi
+      else
+        phi = -0.5d0*pi
+      end if
+    end if
+
+    zeigv(1,1:2) = 1d0/sqrt(2d0)
+    zeigv(2,1) = -exp(zI*phi)/sqrt(2d0)
+    zeigv(2,2) =  exp(zI*phi)/sqrt(2d0)
+    zeigv(3,3) = 1d0
+    zeigv(4,4) = 1d0
+
+  end subroutine calc_zeigv
+
+end subroutine dt_evolve_mid_point_kick_only
 !===================================================================
 subroutine dt_evolve_RK4(it)
   use global_variables
@@ -29,33 +130,33 @@ subroutine dt_evolve_RK4(it)
 ! set fields t=t
     kx_t = kx(ik) + Act(1,it)
     ky_t = ky(ik) + Act(2,it)
-    Ezt_t = Ezt(it)
+!    Ezt_t = Ezt(it)
 
 ! RK-1
     zrho_t(:,:) = zrho_rk(:,:,0)
-    call apply_Lrho(zrho_t, zrho_rk(:,:,1), kx_t,ky_t,Ezt_t)
+    call apply_Lrho(zrho_t, zrho_rk(:,:,1), kx_t,ky_t)!,Ezt_t)
 
 ! set fields t=t + dt/2
     kx_t = kx(ik) + Act_dt2(1,it)
     ky_t = ky(ik) + Act_dt2(2,it)
-    Ezt_t = Ezt_dt2(it)
+!    Ezt_t = Ezt_dt2(it)
 
 ! RK-2
     zrho_t(:,:) = zrho_rk(:,:,0) + 0.5d0*dt*zrho_rk(:,:,1)
-    call apply_Lrho(zrho_t, zrho_rk(:,:,2), kx_t,ky_t,Ezt_t)
+    call apply_Lrho(zrho_t, zrho_rk(:,:,2), kx_t,ky_t)!,Ezt_t)
 
 ! RK-3
     zrho_t(:,:) = zrho_rk(:,:,0) + 0.5d0*dt*zrho_rk(:,:,2)
-    call apply_Lrho(zrho_t, zrho_rk(:,:,3), kx_t,ky_t,Ezt_t)
+    call apply_Lrho(zrho_t, zrho_rk(:,:,3), kx_t,ky_t)!,Ezt_t)
 
 ! set fields t=t + dt
     kx_t = kx(ik) + Act(1,it+1)
     ky_t = ky(ik) + Act(2,it+1)
-    Ezt_t = Ezt(it+1)
+!    Ezt_t = Ezt(it+1)
 
 ! RK-4
     zrho_t(:,:) = zrho_rk(:,:,0) + dt*zrho_rk(:,:,3)
-    call apply_Lrho(zrho_t, zrho_rk(:,:,4), kx_t,ky_t,Ezt_t)
+    call apply_Lrho(zrho_t, zrho_rk(:,:,4), kx_t,ky_t)!,Ezt_t)
 
     zrho_dm(:,:,ik) = zrho_dm(:,:,ik) + dt/6d0*( &
       zrho_rk(:,:,1) + 2d0*zrho_rk(:,:,2) + 2d0*zrho_rk(:,:,3) + zrho_rk(:,:,4))
@@ -68,33 +169,33 @@ subroutine dt_evolve_RK4(it)
 
 end subroutine dt_evolve_RK4
 !===================================================================
-subroutine apply_Lrho(zrho_in, zLrho_out, kx_t, ky_t,Ezt_t)
+subroutine apply_Lrho(zrho_in, zLrho_out, kx_t, ky_t)!,Ezt_t)
   use global_variables
   implicit none
   complex(8),intent(in) :: zrho_in(4,4)
   complex(8),intent(out) :: zLrho_out(4,4)
-  real(8),intent(in) :: kx_t, ky_t, Ezt_t
+  real(8),intent(in) :: kx_t, ky_t!, Ezt_t
   complex(8) :: zHmat_t(4,4)
   complex(8) :: zeigv(4,4), zrho_col(4,4)
   real(8) :: occ_v, occ_c, occ_core, eps_v, eps_c, phi
 
   zhmat_t(1,1) = 0d0
   zhmat_t(2,1) = v_Fermi*(tau_chiral*kx_t+zI*ky_t)
-  zhmat_t(3,1) = dip_core*Ezt_t
+  zhmat_t(3,1) = 0d0 !dip_core*Ezt_t
   zhmat_t(4,1) = 0d0
 
   zhmat_t(1,2) = v_Fermi*(tau_chiral*kx_t-zI*ky_t)
   zhmat_t(2,2) = 0d0
   zhmat_t(3,2) = 0d0
-  zhmat_t(4,2) = dip_core*Ezt_t
+  zhmat_t(4,2) = 0d0 !dip_core*Ezt_t
 
-  zhmat_t(1,3) = dip_core*Ezt_t
+  zhmat_t(1,3) = 0d0 !dip_core*Ezt_t
   zhmat_t(2,3) = 0d0
   zhmat_t(3,3) = eps_core
   zhmat_t(4,3) = 0d0
 
   zhmat_t(1,4) = 0d0
-  zhmat_t(2,4) = dip_core*Ezt_t
+  zhmat_t(2,4) = 0d0 !dip_core*Ezt_t
   zhmat_t(3,4) = 0d0
   zhmat_t(4,4) = eps_core
 
@@ -102,6 +203,7 @@ subroutine apply_Lrho(zrho_in, zLrho_out, kx_t, ky_t,Ezt_t)
 !  call commutator4x4(zHmat_t,zrho_in,zLrho_out)
 !  zLrho_out = -zI*zLrho_out
 
+!  return
 ! relaxation
   eps_c = v_Fermi*sqrt(kx_t**2 + ky_t**2)
   eps_v = - eps_c
