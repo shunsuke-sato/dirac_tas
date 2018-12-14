@@ -13,8 +13,8 @@ subroutine init_laser
     write(*,"(A)")"Start: init_laser"
   end if
 
-  f0_1 = 2d7*ev/angstrom*1d-10 !V/m
-  f0_2 = 0d4*ev/angstrom*1d-10 !V/m
+  f0_1 = 0d7*ev/angstrom*1d-10 !V/m
+  f0_2 = 1d4*ev/angstrom*1d-10 !V/m
   omega_1 = 200d-3*ev
   omega_2 = 300d0*ev
   tpulse_1 = 1d0*fs !2d3*fs
@@ -64,6 +64,17 @@ subroutine init_laser
   end if
 
 ! probe
+  if(.true.)then
+    do it = 0, nt
+      tt = dt*it
+      xx = tt 
+      Ezt(it) = f0_2*cos(omega_2*xx)
+
+      xx = tt + 0.5d0*dt
+      Ezt_dt2(it) = f0_2*cos(omega_2*xx)
+
+  end do
+  else
   do it = 0, nt
     tt = dt*it
     xx = tt - 0.5d0*tpulse_1-tdelay
@@ -77,6 +88,8 @@ subroutine init_laser
     end if
 
   end do
+  end if
+
 
   if(if_root_global)then
     write(*,"(A)")"Finish: init_laser"
