@@ -46,6 +46,10 @@ module global_variables
   integer :: it_impulse
   real(8) :: kmom_impulse
 
+  real(8) :: f0_1, f0_2
+  real(8) :: omega_1, omega_2
+  real(8) :: tpulse_1, tpulse_2
+  real(8) :: tdelay
 
 ! band parameter
   integer,parameter :: nband_type_dirac_cone = 0
