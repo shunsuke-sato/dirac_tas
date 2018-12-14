@@ -2,6 +2,7 @@ program main
   implicit none
   complex(8),parameter :: zi = (0d0, 1d0)
   integer,parameter :: nt = 103353
+  integer,parameter :: nt_impulse = 31006
   real(8),parameter :: ev = 1d0/27.2114d0
   real(8),parameter :: wi = (300d0-2d0)*ev,wf=(300d0+2d0)*ev
   real(8),parameter :: dw = (1d-3)*ev
@@ -13,7 +14,7 @@ program main
   complex(8) :: zd,zs,zw
 
   open(20,file='dipole_t.out')
-  read(20,*)
+  read(20,*); read(20,*)
   do it = 0, nt
      read(20,*)tt(it),f1,pz(it)
   end do
@@ -27,7 +28,7 @@ program main
      zs = 0d0
      zw = 1d0
      zd = exp(-zI*ww*dt)
-     do it = 0,nt
+     do it = nt_impulse,nt
         zs = zs + pz(it)*zw
         zw = zw*zd
      end do
