@@ -4,31 +4,12 @@ subroutine init_laser
   integer :: it
   real(8) :: tt, xx
   real(8) :: t_impulse_fs, t_impulse
-  real(8) :: E0_1_Vm, omega_1_ev, tpulse_1_fs
-  real(8) :: E0_2_Vm, omega_2_ev, tpulse_2_fs
+
 
   if(if_root_global)then
     write(*,"(A)")"Start: init_laser"
   end if
 
-  call read_basic_input('E0_1_Vm',E0_1_Vm,val_default = 0d0)  
-  call read_basic_input('E0_2_Vm',E0_2_Vm,val_default = 0d0)  
-
-  call read_basic_input('omega_1_ev',omega_1_ev,val_default = 200d-3)  
-  call read_basic_input('omega_2_ev',omega_2_ev,val_default = 300d0)  
-
-  call read_basic_input('tpulse_1_fs',tpulse_1_fs,val_default = 1d0)  
-  call read_basic_input('tpulse_2_fs',tpulse_2_fs,val_default = 1d0)  
-
-
-
-
-  f0_1 = E0_1_Vm*ev/angstrom*1d-10 !V/m
-  f0_2 = E0_2_Vm*ev/angstrom*1d-10 !V/m
-  omega_1 = omega_1_ev*ev
-  omega_2 = omega_2_ev*ev
-  tpulse_1 = tpulse_1_fs*fs !2d3*fs
-  tpulse_2 = tpulse_2_fs*fs
 
 
   call read_basic_input('T_impulse_fs',T_impulse_fs,val_default = 0d0)  

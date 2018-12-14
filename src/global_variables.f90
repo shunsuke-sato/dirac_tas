@@ -50,6 +50,7 @@ module global_variables
   real(8) :: omega_1, omega_2
   real(8) :: tpulse_1, tpulse_2
   real(8) :: tdelay
+  integer :: nt_probe_period
 
 ! band parameter
   integer,parameter :: nband_type_dirac_cone = 0

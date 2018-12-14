@@ -26,6 +26,35 @@ subroutine real_time_propagation
     close(20)
   end if
   
+  call calc_polarizability_with_cw_probe(dipole_t)
 
 
 end subroutine real_time_propagation
+!-----------------------------------------------------------------------------------------
+subroutine calc_polarizability_with_cw_probe(dipole_t)
+  use global_variables
+  implicit none
+  real(8),intent(in) :: dipole_t(0:nt+1)
+  integer :: it
+  complex(8) :: zPw, zEw, zfact
+  
+  if(.not. if_root_global)return
+  
+  zPw = 0d0
+  zEw = 0d0
+  do it = nt-nt_probe_period+1,nt
+    zfact = exp(zI*omega_2*dt*it)
+    zPw = zPw + zfact*dipole_t(it)
+    zEw = zEw + zfact*Ezt(it)
+  end do
+  zPw = zPw*dt
+  zEw = zEw*dt
+  
+  write(*,"(A)")"Polarizability"
+  write(*,"(A,2x,e26.16e3)")"omega (a.u.) =",omega_2
+  write(*,"(A,2x,2e26.16e3)")"chi (a.u.) =",zPw/zEw
+    
+
+
+end subroutine calc_polarizability_with_cw_probe
+
