@@ -26,7 +26,7 @@ subroutine real_time_propagation
     close(20)
   end if
   
-  call calc_polarizability_with_cw_probe(dipole_t)
+!  call calc_polarizability_with_cw_probe(dipole_t)
 
 
 end subroutine real_time_propagation

@@ -4,8 +4,8 @@ subroutine dt_evolve(it)
   integer,intent(in) :: it
   integer,parameter :: n_Runge_Kutta_4th = 0
   integer,parameter :: n_mid_point_kick_only = 1
-!  integer,parameter :: imethod = n_mid_point_kick_only
-  integer,parameter :: imethod = n_Runge_Kutta_4th
+  integer,parameter :: imethod = n_mid_point_kick_only
+!  integer,parameter :: imethod = n_Runge_Kutta_4th
 
   select case(imethod)
   case(n_mid_point_kick_only)

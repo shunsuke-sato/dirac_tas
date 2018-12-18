@@ -63,9 +63,9 @@ subroutine input
   T_propagation = T_propagation_fs*fs
   call read_basic_input('dt',dt,val_default = 0d0)
   if(if_root_global)write(*,"(A,2x,e26.16e3)")'input   dt =',dt
-  nt_probe_period = aint( (2d0*pi/omega_2)/dt) +1
-  dt = (2d0*pi/omega_2)/nt_probe_period
-  if(if_root_global)write(*,"(A,2x,e26.16e3)")'refined dt =',dt
+!  nt_probe_period = aint( (2d0*pi/omega_2)/dt) +1
+!  dt = (2d0*pi/omega_2)/nt_probe_period
+!  if(if_root_global)write(*,"(A,2x,e26.16e3)")'refined dt =',dt
 
 
   nt = aint(T_propagation/dt) + 1
